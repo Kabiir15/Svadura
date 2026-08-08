@@ -8,11 +8,18 @@ export function generateStaticParams() {
   return products.map((p) => ({ slug: p.slug }));
 }
 
-export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
-  const product = getProduct(params.slug);
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const product = getProduct(slug);
+
   if (!product) return {};
+
   return {
-    title: `${product.flavor} — ${product.collection}`,
+    title: `${product.flavor} | ${product.collection}`,
     description: product.description,
     openGraph: {
       title: `${product.flavor} | SVADURA`,
@@ -22,11 +29,22 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
   };
 }
 
-export default function ProductPage({ params }: { params: { slug: string } }) {
-  const product = getProduct(params.slug);
+export default async function ProductPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const product = getProduct(slug);
+
   if (!product) return notFound();
 
-  const related = products.filter((p) => p.slug !== product.slug).slice(0, 3);
+  const related = products.filter((p) => p.slug !== product.slug);
 
-  return <ProductDetailClient product={product} related={related} />;
+  return (
+    <ProductDetailClient
+      product={product}
+      related={related}
+    />
+  );
 }
